@@ -1,0 +1,412 @@
+/* モダンでおしゃれなInstagram ER分析アプリのスタイル */
+
+/* 全体のフォントとカラーテーマ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --accent-color: #f093fb;
+    --success-color: #4facfe;
+    --warning-color: #43e97b;
+    --danger-color: #fa709a;
+    --dark-color: #2d3748;
+    --light-color: #f7fafc;
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 全体のスタイル */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ヘッダーのスタイル */
+.main .block-container h1 {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.025em;
+}
+
+.main .block-container h2 {
+    color: var(--dark-color);
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.main .block-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 2px;
+}
+
+/* サイドバーのスタイル */
+.sidebar .sidebar-content {
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    border-right: 1px solid #cbd5e1;
+    color: #1e293b;
+}
+
+.sidebar .sidebar-content .block-container {
+    padding: 2rem 1.5rem;
+}
+
+.sidebar .sidebar-content h3 {
+    color: white;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* カードスタイル */
+.stMetric {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+    margin-bottom: 1rem;
+}
+
+.stMetric:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stMetric > div {
+    text-align: center;
+}
+
+.stMetric .metric-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stMetric .metric-container .metric {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: 'Inter', sans-serif;
+}
+
+.stMetric .metric-container .label {
+    font-size: 0.875rem;
+    color: var(--dark-color);
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+/* タブのスタイル */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+/* データフレームのスタイル */
+.stDataFrame {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.stDataFrame table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.stDataFrame th {
+    background: var(--gradient-primary);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+}
+
+.stDataFrame td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-family: 'Inter', sans-serif;
+}
+
+.stDataFrame tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+/* ファイルアップローダーのスタイル */
+.stFileUploader {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 2px dashed #3b82f6;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+    margin-bottom: 1.5rem;
+}
+
+.stFileUploader:hover {
+    border-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 1);
+    border-width: 3px;
+}
+
+/* セレクトボックスのスタイル */
+.stSelectbox {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(10px);
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.stSelectbox:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(255, 255, 255, 1);
+}
+
+/* スライダーのスタイル */
+.stSlider {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(10px);
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.stSlider:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(255, 255, 255, 1);
+}
+
+/* ボタンのスタイル */
+.stButton > button {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-secondary);
+}
+
+/* 情報表示のスタイル */
+.stAlert {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+/* エラー表示のスタイル */
+.stAlert[data-baseweb="notification"] {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+/* グラフコンテナのスタイル */
+.plotly-graph-div {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+}
+
+/* アニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main .block-container > div {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .main .block-container h1 {
+        font-size: 2rem;
+    }
+    
+    .stMetric {
+        padding: 1rem;
+    }
+    
+    .stMetric .metric-container .metric {
+        font-size: 1.5rem;
+    }
+}
+
+/* カスタムスクロールバー */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gradient-secondary);
+}
+
+/* サイドバー内のテキストとラベルの改善 */
+.sidebar .sidebar-content label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    font-family: 'Inter', sans-serif !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+}
+
+.sidebar .sidebar-content .stMarkdown {
+    color: #374151 !important;
+}
+
+.sidebar .sidebar-content .stMarkdown h4 {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.sidebar .sidebar-content .stMarkdown ul {
+    color: #4b5563 !important;
+}
+
+.sidebar .sidebar-content .stMarkdown code {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #1d4ed8 !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 4px !important;
+    font-family: 'Monaco', 'Menlo', monospace !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+}
+
+/* セパレーターの改善 */
+.sidebar .sidebar-content hr {
+    border: none !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent) !important;
+    margin: 2rem 0 !important;
+}
+
+/* グラデーションテキスト */
+.gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* カードホバーエフェクト */
+.hover-card {
+    transition: var(--transition);
+}
+
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* グラスモーフィズム効果 */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--border-radius);
+}
