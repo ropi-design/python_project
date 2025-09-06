@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}分析結果 - InstaInsight{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        分析結果
+                    </h1>
+                    <p class="text-muted mb-0">ファイル: {{ filename }}</p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>新しいファイルをアップロード
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-images text-primary"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 class="kpi-value">{{ stats.total_posts }}</h3>
+                    <p class="kpi-label">総投稿数</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-percentage text-success"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 class="kpi-value">{{ "%.2f"|format(stats.avg_er) }}%</h3>
+                    <p class="kpi-label">平均ER</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-heart text-danger"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 class="kpi-value">{{ "%.0f"|format(stats.avg_likes) }}</h3>
+                    <p class="kpi-label">平均いいね数</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-comments text-info"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 class="kpi-value">{{ "%.0f"|format(stats.avg_comments) }}</h3>
+                    <p class="kpi-label">平均コメント数</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="analysisTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button">
+                        <i class="fas fa-trophy me-2"></i>ランキング
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="hourly-tab" data-bs-toggle="tab" data-bs-target="#hourly" type="button">
+                        <i class="fas fa-clock me-2"></i>時間帯分析
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" type="button">
+                        <i class="fas fa-calendar me-2"></i>曜日分析
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="hashtag-tab" data-bs-toggle="tab" data-bs-target="#hashtag" type="button">
+                        <i class="fas fa-hashtag me-2"></i>ハッシュタグ分析
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="analysisTabContent">
+                <!-- Ranking Tab -->
+                <div class="tab-pane fade show active" id="ranking" role="tabpanel">
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-trophy me-2"></i>上位ランキング
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if not top_rankings.empty %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>投稿ID</th>
+                                                        <th>投稿日時</th>
+                                                        <th>ER(%)</th>
+                                                        <th>エンゲージメント</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for _, row in top_rankings.iterrows() %}
+                                                    <tr>
+                                                        <td>{{ row.get('post_id', 'N/A') }}</td>
+                                                        <td>{{ row.get('posted_at', 'N/A') }}</td>
+                                                        <td>{{ "%.2f"|format(row.get('er_percentage', 0)) }}</td>
+                                                        <td>{{ "%.0f"|format(row.get('engagement_total', 0)) }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">有効なエンゲージメント率データがありません</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>下位ランキング
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if not bottom_rankings.empty %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>投稿ID</th>
+                                                        <th>投稿日時</th>
+                                                        <th>ER(%)</th>
+                                                        <th>エンゲージメント</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for _, row in bottom_rankings.iterrows() %}
+                                                    <tr>
+                                                        <td>{{ row.get('post_id', 'N/A') }}</td>
+                                                        <td>{{ row.get('posted_at', 'N/A') }}</td>
+                                                        <td>{{ "%.2f"|format(row.get('er_percentage', 0)) }}</td>
+                                                        <td>{{ "%.0f"|format(row.get('engagement_total', 0)) }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">有効なエンゲージメント率データがありません</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hourly Analysis Tab -->
+                <div class="tab-pane fade" id="hourly" role="tabpanel">
+                    <div class="mt-4">
+                        {% if hourly_chart %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-clock me-2"></i>時間帯別平均エンゲージメント率
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="hourly-chart"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                時間帯別のデータがありません
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Weekly Analysis Tab -->
+                <div class="tab-pane fade" id="weekly" role="tabpanel">
+                    <div class="mt-4">
+                        {% if weekly_chart %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar me-2"></i>曜日別平均エンゲージメント率
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="weekly-chart"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                曜日別のデータがありません
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Hashtag Analysis Tab -->
+                <div class="tab-pane fade" id="hashtag" role="tabpanel">
+                    <div class="mt-4">
+                        {% if hashtag_chart %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-hashtag me-2"></i>ハッシュタグ使用頻度
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="hashtag-chart"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                ハッシュタグのデータがありません
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ページ読み込み完了後にチャートを描画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 時間帯別チャート
+        {% if hourly_chart %}
+        const hourlyData = {{ hourly_chart|safe }};
+        if (hourlyData && hourlyData.data && hourlyData.layout) {
+            Plotly.newPlot('hourly-chart', hourlyData.data, hourlyData.layout);
+        }
+        {% endif %}
+        
+        // 曜日別チャート
+        {% if weekly_chart %}
+        const weeklyData = {{ weekly_chart|safe }};
+        if (weeklyData && weeklyData.data && weeklyData.layout) {
+            Plotly.newPlot('weekly-chart', weeklyData.data, weeklyData.layout);
+        }
+        {% endif %}
+        
+        // ハッシュタグチャート
+        {% if hashtag_chart %}
+        const hashtagData = {{ hashtag_chart|safe }};
+        if (hashtagData && hashtagData.data && hashtagData.layout) {
+            Plotly.newPlot('hashtag-chart', hashtagData.data, hashtagData.layout);
+        }
+        {% endif %}
+    });
+    
+    // タブ切り替え時のチャート再描画
+    {% if hourly_chart %}
+    document.getElementById('hourly-tab').addEventListener('shown.bs.tab', function () {
+        const chartData = {{ hourly_chart|safe }};
+        if (chartData && chartData.data && chartData.layout) {
+            Plotly.newPlot('hourly-chart', chartData.data, chartData.layout);
+        }
+    });
+    {% endif %}
+    
+    {% if weekly_chart %}
+    document.getElementById('weekly-tab').addEventListener('shown.bs.tab', function () {
+        const chartData = {{ weekly_chart|safe }};
+        if (chartData && chartData.data && chartData.layout) {
+            Plotly.newPlot('weekly-chart', chartData.data, chartData.layout);
+        }
+    });
+    {% endif %}
+    
+    {% if hashtag_chart %}
+    document.getElementById('hashtag-tab').addEventListener('shown.bs.tab', function () {
+        const chartData = {{ hashtag_chart|safe }};
+        if (chartData && chartData.data && chartData.layout) {
+            Plotly.newPlot('hashtag-chart', chartData.data, chartData.layout);
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
