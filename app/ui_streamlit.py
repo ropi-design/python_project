@@ -5,6 +5,7 @@ Streamlit UIのメインモジュール
 
 import streamlit as st
 import pandas as pd
+import io
 
 from .loaders import load_csv
 from .logic import compute_er, rank_by_er, avg_by_hour, avg_by_weekday, simple_hashtag_summary
@@ -145,20 +146,26 @@ def main():
 
     # ページ設定
     st.set_page_config(
-        page_title="Instagram ER分析アプリ", page_icon="📊", layout="wide", initial_sidebar_state="expanded"
+        page_title="InstaInsight〜Instagramエンゲージメント率分析アプリ〜",
+        page_icon="📊",
+        layout="wide",
+        initial_sidebar_state="expanded",
     )
 
     # ヘッダー
     st.markdown(
         """
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h1 class="gradient-text">
-                📊 Instagram エンゲージメント率分析アプリ
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 3px solid #fff; border-radius: 25px; padding: 2rem 3rem; margin: 2rem auto; max-width: 800px; box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden;">
+            <h1 style="color: white; font-size: 2.5rem; font-weight: 700; margin: 0; text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); position: relative; z-index: 1; letter-spacing: 1px;">
+                📊 InstaInsight〜Instagramエンゲージメント率分析アプリ〜
             </h1>
-            <p style="font-size: 1.2rem; color: #64748b; margin-top: 1rem;">
+            <div style="width: 100px; height: 4px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4); margin: 1rem auto; border-radius: 2px; position: relative; z-index: 1;"></div>
+            <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.9); margin: 1rem 0 0 0; font-weight: 300; position: relative; z-index: 1;">
                 CSVファイルをアップロードして、投稿のエンゲージメント率を分析しましょう！
             </p>
         </div>
+    </div>
     """,
         unsafe_allow_html=True,
     )
@@ -182,7 +189,7 @@ def main():
         # ファイルアップロード
         st.markdown("**📁 CSVファイルを選択**")
         uploaded_file = st.file_uploader(
-            "",
+            "CSVファイルをアップロード",
             type=["csv"],
             help="必須列: post_id, posted_at, likes, comments, saves, followers_at_post",
         )
@@ -192,7 +199,7 @@ def main():
         # 計算基準選択
         st.markdown("**🎯 エンゲージメント率の計算基準**")
         er_basis = st.selectbox(
-            "",
+            "計算基準を選択",
             ["followers", "reach"],
             help="フォロワー数基準またはリーチ数基準でERを計算",
         )
@@ -201,7 +208,7 @@ def main():
 
         # 表示件数設定
         st.markdown("**🏆 ランキング表示件数**")
-        ranking_count = st.slider("", 5, 20, 10)
+        ranking_count = st.slider("表示件数", 5, 20, 10)
 
         st.markdown("---")
 
@@ -262,14 +269,26 @@ def main():
                 df = compute_er(df, "reach")
                 st.success("🎯 リーチ基準でERを再計算しました")
             elif er_basis == "followers":
-                st.info("👥 フォロワー基準のERを使用します（既に計算済み）")
+                # フォロワー基準のERが既に計算されているか確認
+                if "er_percentage" not in df.columns:
+                    df = compute_er(df, "followers")
+                    st.success("🎯 フォロワー基準でERを計算しました")
+                else:
+                    st.info("👥 フォロワー基準のERを使用します（既に計算済み）")
 
             # KPIカード
             display_kpi_cards(df)
 
             # タブ表示
-            tab1, tab2, tab3, tab4 = st.tabs(
-                ["🏆 ランキング", "⏰ 時間分析", "📅 曜日分析", "🏷️ ハッシュタグ分析"]
+            tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+                [
+                    "🏆 ランキング",
+                    "⏰ 時間分析",
+                    "📅 曜日分析",
+                    "🏷️ ハッシュタグ分析",
+                    "💡 改善提案",
+                    "📊 データエクスポート",
+                ]
             )
 
             with tab1:
@@ -283,6 +302,17 @@ def main():
 
             with tab4:
                 display_hashtag_analysis(df)
+
+            with tab5:
+                st.markdown("### 📊 改善提案")
+                st.info("改善提案機能は現在開発中です。")
+                st.markdown("**基本的な改善のヒント:**")
+                st.markdown("- エンゲージメント率の高い投稿の時間帯を分析してください")
+                st.markdown("- 人気のハッシュタグを特定して活用してください")
+                st.markdown("- 投稿頻度を適切に調整してください")
+
+            with tab6:
+                display_export_section(df)
 
     else:
         # ファイル未アップロード時の表示
@@ -323,7 +353,7 @@ def main():
             "hashtags": ["#夏 #海 #旅行", "#グルメ #ランチ"],
         }
 
-        st.dataframe(pd.DataFrame(sample_data), use_container_width=True)
+        st.dataframe(pd.DataFrame(sample_data), width="stretch")
 
 
 def display_kpi_cards(df: pd.DataFrame):
@@ -341,11 +371,12 @@ def display_kpi_cards(df: pd.DataFrame):
 
     with col1:
         avg_er = df["er_percentage"].mean()
+        er_display = f"{avg_er:.2f}%" if not pd.isna(avg_er) else "N/A"
         st.markdown(
             f"""
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);">
                 <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                    {avg_er:.2f}% if not pd.isna(avg_er) else "N/A"
+                    {er_display}
                 </div>
                 <div style="font-size: 1rem; opacity: 0.9;">平均エンゲージメント率</div>
             </div>
@@ -370,11 +401,12 @@ def display_kpi_cards(df: pd.DataFrame):
     with col3:
         if "reach" in df.columns:
             avg_reach = df["reach"].mean()
+            reach_display = f"{avg_reach:,.0f}" if not pd.isna(avg_reach) else "N/A"
             st.markdown(
                 f"""
                 <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);">
                     <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                        {avg_reach:,.0f} if not pd.isna(avg_reach) else "N/A"
+                        {reach_display}
                     </div>
                     <div style="font-size: 1rem; opacity: 0.9;">平均リーチ数</div>
                 </div>
@@ -394,11 +426,12 @@ def display_kpi_cards(df: pd.DataFrame):
 
     with col4:
         avg_likes = df["likes"].mean()
+        likes_display = f"{avg_likes:.0f}" if not pd.isna(avg_likes) else "N/A"
         st.markdown(
             f"""
             <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(67, 233, 123, 0.3);">
                 <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                    {avg_likes:.0f} if not pd.isna(avg_likes) else "N/A"
+                    {likes_display}
                 </div>
                 <div style="font-size: 1rem; opacity: 0.9;">平均いいね数</div>
             </div>
@@ -432,6 +465,7 @@ def display_rankings(df: pd.DataFrame, count: int):
 
         try:
             top_rankings = rank_by_er(df, top=True, n=count)
+
             if not top_rankings.empty:
                 display_ranking_table(top_rankings, "上位")
             else:
@@ -451,6 +485,7 @@ def display_rankings(df: pd.DataFrame, count: int):
 
         try:
             bottom_rankings = rank_by_er(df, top=False, n=count)
+
             if not bottom_rankings.empty:
                 display_ranking_table(bottom_rankings, "下位")
             else:
@@ -466,7 +501,7 @@ def display_ranking_table(df: pd.DataFrame, rank_type: str):
     display_df["er_percentage"] = display_df["er_percentage"].round(2)
     display_df.columns = ["投稿ID", "投稿日時", "ER(%)", "エンゲージメント合計"]
 
-    st.dataframe(display_df, use_container_width=True)
+    st.dataframe(display_df, width="stretch")
 
 
 def display_hourly_analysis(df: pd.DataFrame):
@@ -488,7 +523,7 @@ def display_hourly_analysis(df: pd.DataFrame):
         with col1:
             fig = bar_hourly_er(hourly_data)
             if fig:
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
         with col2:
             st.markdown(
@@ -499,7 +534,7 @@ def display_hourly_analysis(df: pd.DataFrame):
             """,
                 unsafe_allow_html=True,
             )
-            st.dataframe(hourly_data, use_container_width=True)
+            st.dataframe(hourly_data, width="stretch")
     else:
         st.error("時間帯別のデータが不足しています")
 
@@ -523,7 +558,7 @@ def display_weekly_analysis(df: pd.DataFrame):
         with col1:
             fig = bar_weekly_er(weekly_data)
             if fig:
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
         with col2:
             st.markdown(
@@ -534,7 +569,7 @@ def display_weekly_analysis(df: pd.DataFrame):
             """,
                 unsafe_allow_html=True,
             )
-            st.dataframe(weekly_data, use_container_width=True)
+            st.dataframe(weekly_data, width="stretch")
     else:
         st.error("曜日別のデータが不足しています")
 
@@ -564,14 +599,14 @@ def display_hashtag_analysis(df: pd.DataFrame):
             """,
                 unsafe_allow_html=True,
             )
-            st.dataframe(hashtag_data, use_container_width=True)
+            st.dataframe(hashtag_data, width="stretch")
 
         with col2:
             # ハッシュタグ別の散布図
             if len(hashtag_data) > 1:
                 fig = create_hashtag_scatter(hashtag_data)
                 if fig:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
     else:
         st.error("ハッシュタグデータが不足しています")
 
@@ -584,9 +619,9 @@ def create_hashtag_scatter(df: pd.DataFrame):
         fig = px.scatter(
             df,
             x="使用回数",
-            y="平均ER(%)",
+            y="平均ER",
             size="総エンゲージメント",
-            color="平均ER(%)",
+            color="平均ER",
             hover_name="hashtag",
             title="ハッシュタグ別パフォーマンス",
             size_max=20,
@@ -605,6 +640,201 @@ def create_hashtag_scatter(df: pd.DataFrame):
 
         return fig
     except ImportError:
+        return None
+
+
+def display_export_section(df: pd.DataFrame):
+    """データエクスポートセクションを表示"""
+    st.markdown(
+        """
+        <div style="text-align: center; margin: 3rem 0 2rem 0;">
+            <h2>📊 データエクスポート</h2>
+            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 2rem;">
+                分析結果をCSVファイルとしてダウンロードできます
+            </p>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### 📈 元データ（全投稿）")
+        st.markdown("アップロードした全投稿データをCSVでダウンロード")
+
+        # 元データのCSVエクスポート
+        csv_data = df.to_csv(index=False, encoding="utf-8-sig")
+        st.download_button(
+            label="📥 全データをCSVでダウンロード",
+            data=csv_data,
+            file_name=f"instagram_analysis_full_data_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            help="全投稿データ（ER計算済み）をCSVファイルとしてダウンロード",
+        )
+
+        # データプレビュー
+        st.markdown("**データプレビュー:**")
+        st.dataframe(df.head(10), width="stretch")
+
+    with col2:
+        st.markdown("### 🏆 ランキングデータ")
+        st.markdown("上位・下位ランキングデータをCSVでダウンロード")
+
+        # 上位ランキング
+        top_rankings = rank_by_er(df, top=True, n=20)
+        if not top_rankings.empty:
+            top_csv = top_rankings.to_csv(index=False, encoding="utf-8-sig")
+            st.download_button(
+                label="📥 上位ランキングをCSVでダウンロード",
+                data=top_csv,
+                file_name=f"instagram_top_rankings_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                help="上位20位のランキングデータをCSVファイルとしてダウンロード",
+            )
+
+        # 下位ランキング
+        bottom_rankings = rank_by_er(df, top=False, n=20)
+        if not bottom_rankings.empty:
+            bottom_csv = bottom_rankings.to_csv(index=False, encoding="utf-8-sig")
+            st.download_button(
+                label="📥 下位ランキングをCSVでダウンロード",
+                data=bottom_csv,
+                file_name=f"instagram_bottom_rankings_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                help="下位20位のランキングデータをCSVファイルとしてダウンロード",
+            )
+
+    st.markdown("---")
+
+    # 分析結果のエクスポート
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.markdown("### ⏰ 時間帯分析データ")
+        hourly_data = avg_by_hour(df)
+        if not hourly_data.empty:
+            hourly_csv = hourly_data.to_csv(index=False, encoding="utf-8-sig")
+            st.download_button(
+                label="📥 時間帯分析をCSVでダウンロード",
+                data=hourly_csv,
+                file_name=f"instagram_hourly_analysis_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                help="時間帯別の平均ERデータをCSVファイルとしてダウンロード",
+            )
+        else:
+            st.info("時間帯分析データがありません")
+
+    with col4:
+        st.markdown("### 📅 曜日分析データ")
+        weekly_data = avg_by_weekday(df)
+        if not weekly_data.empty:
+            weekly_csv = weekly_data.to_csv(index=False, encoding="utf-8-sig")
+            st.download_button(
+                label="📥 曜日分析をCSVでダウンロード",
+                data=weekly_csv,
+                file_name=f"instagram_weekly_analysis_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                help="曜日別の平均ERデータをCSVファイルとしてダウンロード",
+            )
+        else:
+            st.info("曜日分析データがありません")
+
+    # ハッシュタグ分析データ
+    st.markdown("### 🏷️ ハッシュタグ分析データ")
+    hashtag_data = simple_hashtag_summary(df)
+    if not hashtag_data.empty:
+        hashtag_csv = hashtag_data.to_csv(index=False, encoding="utf-8-sig")
+        st.download_button(
+            label="📥 ハッシュタグ分析をCSVでダウンロード",
+            data=hashtag_csv,
+            file_name=f"instagram_hashtag_analysis_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            help="ハッシュタグ別の集計データをCSVファイルとしてダウンロード",
+        )
+    else:
+        st.info("ハッシュタグ分析データがありません")
+
+    # サマリー統計
+    st.markdown("---")
+    st.markdown("### 📊 サマリー統計")
+    summary_stats = create_summary_stats(df)
+    if summary_stats is not None:
+        summary_csv = summary_stats.to_csv(index=True, encoding="utf-8-sig")
+        st.download_button(
+            label="📥 サマリー統計をCSVでダウンロード",
+            data=summary_csv,
+            file_name=f"instagram_summary_stats_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            help="基本統計情報をCSVファイルとしてダウンロード",
+        )
+
+        # サマリー統計を表示（PyArrowの変換エラーを回避）
+        st.dataframe(summary_stats, width="stretch", use_container_width=True)
+
+
+def display_improvement_suggestions(df: pd.DataFrame):
+    """改善提案を表示（現在無効化）"""
+    st.info("改善提案機能は現在開発中です。")
+
+
+def generate_improvement_suggestions(df: pd.DataFrame):
+    """データ分析に基づいて改善提案を生成（現在無効化）"""
+    return []
+
+
+def display_suggestion_card(suggestion, index):
+    """改善提案カードを表示（現在無効化）"""
+    pass
+
+
+def create_summary_stats(df: pd.DataFrame):
+    """サマリー統計を作成（データ型変換エラーを修正）"""
+    try:
+        # 数値データを事前に計算
+        avg_er = df["er_percentage"].mean() if not df["er_percentage"].isna().all() else 0
+        max_er = df["er_percentage"].max() if not df["er_percentage"].isna().all() else 0
+        min_er = df["er_percentage"].min() if not df["er_percentage"].isna().all() else 0
+        avg_likes = df["likes"].mean() if not df["likes"].isna().all() else 0
+        avg_comments = df["comments"].mean() if not df["comments"].isna().all() else 0
+        avg_saves = df["saves"].mean() if not df["saves"].isna().all() else 0
+        avg_engagement = (
+            df["engagement_total"].mean()
+            if "engagement_total" in df.columns and not df["engagement_total"].isna().all()
+            else 0
+        )
+
+        # データを辞書として作成し、すべての値を文字列として明示的に設定
+        stats_data = {
+            "指標": [
+                "総投稿数",
+                "平均ER",
+                "最高ER",
+                "最低ER",
+                "平均いいね数",
+                "平均コメント数",
+                "平均保存数",
+                "平均エンゲージメント合計",
+            ],
+            "値": [
+                str(len(df)),
+                f"{avg_er:.2f}%" if not pd.isna(avg_er) else "N/A",
+                f"{max_er:.2f}%" if not pd.isna(max_er) else "N/A",
+                f"{min_er:.2f}%" if not pd.isna(min_er) else "N/A",
+                f"{int(round(avg_likes, 0)):,}" if not pd.isna(avg_likes) else "N/A",
+                f"{int(round(avg_comments, 0)):,}" if not pd.isna(avg_comments) else "N/A",
+                f"{int(round(avg_saves, 0)):,}" if not pd.isna(avg_saves) else "N/A",
+                f"{int(round(avg_engagement, 0)):,}" if not pd.isna(avg_engagement) else "N/A",
+            ],
+        }
+
+        # DataFrameを作成し、すべての列をobject型（文字列）として明示的に設定
+        df_stats = pd.DataFrame(stats_data)
+        df_stats = df_stats.astype(str)  # すべての列を文字列型に変換
+
+        return df_stats
+    except Exception as e:
+        st.error(f"サマリー統計の作成エラー: {str(e)}")
         return None
 
 

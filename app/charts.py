@@ -24,16 +24,17 @@ def bar_hourly_er(df: pd.DataFrame) -> Optional[go.Figure]:
 
     # 時間を24時間表記に変換
     df_display = df.copy()
-    df_display["時間"] = df_display["hour"].astype(str) + "時"
+    if "時間" not in df_display.columns:
+        df_display["時間"] = df_display["hour"].astype(str) + "時"
 
     fig = px.bar(
         df_display,
         x="時間",
-        y="平均ER(%)",
+        y="平均ER",
         title="時間帯別平均エンゲージメント率",
-        color="平均ER(%)",
+        color="平均ER",
         color_continuous_scale="viridis",
-        text="平均ER(%)",
+        text="平均ER",
         hover_data=["投稿数"],
     )
 
@@ -69,16 +70,17 @@ def bar_weekly_er(df: pd.DataFrame) -> Optional[go.Figure]:
     }
 
     df_display = df.copy()
-    df_display["曜日"] = df_display["weekday"].map(weekday_jp)
+    if "曜日" not in df_display.columns:
+        df_display["曜日"] = df_display["weekday"].map(weekday_jp)
 
     fig = px.bar(
         df_display,
         x="曜日",
-        y="平均ER(%)",
+        y="平均ER",
         title="曜日別平均エンゲージメント率",
-        color="平均ER(%)",
+        color="平均ER",
         color_continuous_scale="plasma",
-        text="平均ER(%)",
+        text="平均ER",
         hover_data=["投稿数"],
     )
 

@@ -78,8 +78,9 @@ def avg_by_hour(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame()
 
     hourly_avg = df.groupby("hour")["er_percentage"].agg(["mean", "count"]).round(2)
-    hourly_avg.columns = ["平均ER(%)", "投稿数"]
+    hourly_avg.columns = ["平均ER", "投稿数"]
     hourly_avg = hourly_avg.reset_index()
+    hourly_avg["時間"] = hourly_avg["hour"].astype(str) + "時"
 
     return hourly_avg
 
@@ -101,7 +102,7 @@ def avg_by_weekday(df: pd.DataFrame) -> pd.DataFrame:
     weekday_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     weekday_avg = df.groupby("weekday")["er_percentage"].agg(["mean", "count"]).round(2)
-    weekday_avg.columns = ["平均ER(%)", "投稿数"]
+    weekday_avg.columns = ["平均ER", "投稿数"]
     weekday_avg = weekday_avg.reset_index()
 
     # 曜日順でソート
@@ -150,8 +151,8 @@ def simple_hashtag_summary(df: pd.DataFrame) -> pd.DataFrame:
         .round(2)
     )
 
-    summary.columns = ["平均ER(%)", "使用回数", "総エンゲージメント"]
+    summary.columns = ["平均ER", "使用回数", "総エンゲージメント"]
     summary = summary.reset_index()
-    summary = summary.sort_values("平均ER(%)", ascending=False)
+    summary = summary.sort_values("平均ER", ascending=False)
 
     return summary
