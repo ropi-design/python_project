@@ -10,6 +10,9 @@ from utils.analysis import (
     avg_by_hour,
     avg_by_weekday,
     simple_hashtag_summary,
+    generate_improvement_suggestions,
+    generate_content_recommendations,
+    calculate_engagement_metrics,
 )
 from utils.chart_generator import create_hourly_chart, create_weekly_chart, create_hashtag_chart
 
@@ -105,6 +108,15 @@ def analysis(filename):
         hashtag_data = simple_hashtag_summary(df, top_n=10)
         hashtag_chart = create_hashtag_chart(df, top_n=10) if not hashtag_data.empty else None
 
+        # 改善提案を生成
+        improvement_suggestions = generate_improvement_suggestions(df)
+
+        # 内容分析による改善提案を生成
+        content_recommendations = generate_content_recommendations(df)
+
+        # エンゲージメント指標を計算
+        engagement_metrics = calculate_engagement_metrics(df)
+
         return render_template(
             "analysis.html",
             stats=stats,
@@ -116,6 +128,9 @@ def analysis(filename):
             hourly_chart=hourly_chart,
             weekly_chart=weekly_chart,
             hashtag_chart=hashtag_chart,
+            improvement_suggestions=improvement_suggestions,
+            content_recommendations=content_recommendations,
+            engagement_metrics=engagement_metrics,
             filename=filename,
         )
 

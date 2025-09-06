@@ -97,6 +97,21 @@
                         <i class="fas fa-hashtag me-2"></i>ハッシュタグ分析
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="metrics-tab" data-bs-toggle="tab" data-bs-target="#metrics" type="button">
+                        <i class="fas fa-chart-line me-2"></i>エンゲージメント指標
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="suggestions-tab" data-bs-toggle="tab" data-bs-target="#suggestions" type="button">
+                        <i class="fas fa-lightbulb me-2"></i>改善提案
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="content-analysis-tab" data-bs-toggle="tab" data-bs-target="#content-analysis" type="button">
+                        <i class="fas fa-search me-2"></i>内容分析
+                    </button>
+                </li>
             </ul>
             
             <div class="tab-content" id="analysisTabContent">
@@ -266,6 +281,337 @@
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
                                 ハッシュタグのデータがありません
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Engagement Metrics Tab -->
+                <div class="tab-pane fade" id="metrics" role="tabpanel">
+                    <div class="mt-4">
+                        {% if engagement_metrics and not engagement_metrics.error %}
+                            <div class="row">
+                                {% for metric_type, metrics in engagement_metrics.items() %}
+                                <div class="col-12 mb-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-chart-line me-2"></i>{{ metric_type }}
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="row">
+                                                        <div class="col-md-3 mb-3">
+                                                            <div class="text-center">
+                                                                <h4 class="text-primary">{{ metrics.平均ER }}</h4>
+                                                                <p class="mb-0 text-muted">平均ER</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3 mb-3">
+                                                            <div class="text-center">
+                                                                <h4 class="text-success">{{ metrics.最高ER }}</h4>
+                                                                <p class="mb-0 text-muted">最高ER</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3 mb-3">
+                                                            <div class="text-center">
+                                                                <h4 class="text-warning">{{ metrics.最低ER }}</h4>
+                                                                <p class="mb-0 text-muted">最低ER</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3 mb-3">
+                                                            <div class="text-center">
+                                                                <h4 class="text-info">{{ metrics.中央値ER }}</h4>
+                                                                <p class="mb-0 text-muted">中央値ER</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="alert alert-light">
+                                                        <h6 class="text-primary mb-2">
+                                                            <i class="fas fa-calculator me-2"></i>計算式
+                                                        </h6>
+                                                        <p class="mb-0 small">{{ metrics.計算式 }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                エンゲージメント指標を計算するためのデータが不足しています。
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Improvement Suggestions Tab -->
+                <div class="tab-pane fade" id="suggestions" role="tabpanel">
+                    <div class="mt-4">
+                        {% if improvement_suggestions and not improvement_suggestions.error %}
+                            <!-- Summary Cards -->
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary">{{ improvement_suggestions.total_suggestions }}</h3>
+                                            <p class="mb-0">総提案数</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card border-danger">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-danger">{{ improvement_suggestions.high_priority }}</h3>
+                                            <p class="mb-0">高優先度</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-warning">{{ improvement_suggestions.medium_priority }}</h3>
+                                            <p class="mb-0">中優先度</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success">{{ improvement_suggestions.low_priority }}</h3>
+                                            <p class="mb-0">低優先度</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Suggestions List -->
+                            <div class="row">
+                                {% for suggestion in improvement_suggestions.suggestions %}
+                                <div class="col-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">
+                                                {% if suggestion.priority == "高" %}
+                                                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                                {% elif suggestion.priority == "中" %}
+                                                    <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-info-circle text-success me-2"></i>
+                                                {% endif %}
+                                                {{ suggestion.title }}
+                                            </h5>
+                                            <span class="badge 
+                                                {% if suggestion.priority == "高" %}bg-danger
+                                                {% elif suggestion.priority == "中" %}bg-warning
+                                                {% else %}bg-success{% endif %}">
+                                                {{ suggestion.priority }}優先度
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h6 class="text-muted mb-2">{{ suggestion.category }}</h6>
+                                                    <p class="mb-3">{{ suggestion.description }}</p>
+                                                    <div class="alert alert-light">
+                                                        <strong>推奨アクション:</strong> {{ suggestion.recommendation }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        {% if suggestion.priority == "高" %}
+                                                            <i class="fas fa-fire text-danger" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% elif suggestion.priority == "中" %}
+                                                            <i class="fas fa-clock text-warning" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                改善提案を生成するためのデータが不足しています。
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Content Analysis Tab -->
+                <div class="tab-pane fade" id="content-analysis" role="tabpanel">
+                    <div class="mt-4">
+                        {% if content_recommendations and not content_recommendations.error %}
+                            <!-- Content Analysis Summary -->
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-info">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info">{{ content_recommendations.total_recommendations }}</h3>
+                                            <p class="mb-0">内容分析提案数</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-danger">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-danger">{{ content_recommendations.high_priority }}</h3>
+                                            <p class="mb-0">高優先度</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-warning">{{ content_recommendations.medium_priority }}</h3>
+                                            <p class="mb-0">中優先度</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content Analysis Results -->
+                            <div class="row">
+                                {% for recommendation in content_recommendations.recommendations %}
+                                <div class="col-12 mb-4">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">
+                                                {% if recommendation.priority == "高" %}
+                                                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                                {% elif recommendation.priority == "中" %}
+                                                    <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                                {% else %}
+                                                    <i class="fas fa-info-circle text-success me-2"></i>
+                                                {% endif %}
+                                                {{ recommendation.title }}
+                                            </h5>
+                                            <span class="badge 
+                                                {% if recommendation.priority == "高" %}bg-danger
+                                                {% elif recommendation.priority == "中" %}bg-warning
+                                                {% else %}bg-success{% endif %}">
+                                                {{ recommendation.priority }}優先度
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h6 class="text-muted mb-2">{{ recommendation.category }}</h6>
+                                                    <p class="mb-3">{{ recommendation.description }}</p>
+                                                    <div class="alert alert-light">
+                                                        <strong>推奨アクション:</strong> {{ recommendation.recommendation }}
+                                                    </div>
+                                                    
+                                                    {% if recommendation.action_items %}
+                                                    <div class="mt-3">
+                                                        <h6 class="text-primary mb-2">
+                                                            <i class="fas fa-tasks me-2"></i>具体的なアクション項目:
+                                                        </h6>
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for item in recommendation.action_items %}
+                                                            <li class="list-group-item d-flex align-items-center">
+                                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                                {{ item }}
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center">
+                                                        {% if recommendation.priority == "高" %}
+                                                            <i class="fas fa-fire text-danger" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% elif recommendation.priority == "中" %}
+                                                            <i class="fas fa-clock text-warning" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success" style="font-size: 3rem; opacity: 0.3;"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Content Analysis Insights -->
+                            {% if content_recommendations.content_analysis %}
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-chart-bar me-2"></i>詳細分析結果
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                {% if content_recommendations.content_analysis.hashtag_patterns %}
+                                                <div class="col-md-6 mb-3">
+                                                    <h6 class="text-primary">ハッシュタグ分析結果</h6>
+                                                    {% if content_recommendations.content_analysis.hashtag_patterns.optimal_count %}
+                                                    <p class="mb-1">
+                                                        <strong>最適なハッシュタグ数:</strong> 
+                                                        {{ content_recommendations.content_analysis.hashtag_patterns.optimal_count.count }}個
+                                                        (平均ER: {{ content_recommendations.content_analysis.hashtag_patterns.optimal_count.avg_er }}%)
+                                                    </p>
+                                                    {% endif %}
+                                                    
+                                                    {% if content_recommendations.content_analysis.hashtag_patterns.effective_tags %}
+                                                    <p class="mb-1"><strong>効果的なハッシュタグ:</strong></p>
+                                                    <ul class="list-unstyled">
+                                                        {% for tag, stats in content_recommendations.content_analysis.hashtag_patterns.effective_tags.items() %}
+                                                        <li class="mb-1">
+                                                            <span class="badge bg-success me-1">#{{ tag }}</span>
+                                                            <small class="text-muted">(平均ER: {{ stats.mean }}%, 使用回数: {{ stats.count }})</small>
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if content_recommendations.content_analysis.time_patterns %}
+                                                <div class="col-md-6 mb-3">
+                                                    <h6 class="text-primary">時間帯分析結果</h6>
+                                                    {% for category, data in content_recommendations.content_analysis.time_patterns.items() %}
+                                                    <p class="mb-1">
+                                                        <strong>
+                                                            {% if category == "morning" %}朝（6-11時）
+                                                            {% elif category == "afternoon" %}午後（12-17時）
+                                                            {% elif category == "evening" %}夕方（18-23時）
+                                                            {% elif category == "night" %}夜間（0-5時）
+                                                            {% endif %}:
+                                                        </strong>
+                                                        平均ER {{ data.avg_er }}% (投稿数: {{ data.post_count }})
+                                                    </p>
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                内容分析を実行するためのデータが不足しています。
                             </div>
                         {% endif %}
                     </div>

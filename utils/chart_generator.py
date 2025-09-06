@@ -88,6 +88,13 @@ def create_weekly_chart(df):
     weekday_data["曜日"] = weekday_data["weekday"].map(weekday_jp)
     weekday_data["text_label"] = weekday_data["er_percentage"].apply(lambda x: f"{x:.1f}%")
 
+
+    # デバッグ情報を出力
+    print(f"DEBUG: create_weekly_chart - weekday_data shape: {weekday_data.shape}")
+    print(f"DEBUG: create_weekly_chart - weekday_data columns: {weekday_data.columns.tolist()}")
+    print(f"DEBUG: create_weekly_chart - weekday_data data:")
+    print(weekday_data)
+
     # Plotly Expressを使用して確実に縦棒グラフを作成
     import plotly.express as px
 
@@ -113,13 +120,19 @@ def create_weekly_chart(df):
         ),
     )
 
+    # Y軸の範囲を適切に設定
+    y_max = weekday_data["er_percentage"].max()
+    y_range = [0, y_max * 1.2] if y_max > 0 else [0, 1]
+
     fig.update_layout(
         template="plotly_white",
         height=400,
         showlegend=False,
         margin=dict(l=50, r=50, t=50, b=50),
         xaxis=dict(type="category", categoryorder="array", categoryarray=weekday_data["曜日"].tolist()),
-        yaxis=dict(type="linear", range=[0, max(weekday_data["er_percentage"]) * 1.1]),
+        yaxis=dict(
+            type="linear", range=y_range, title="エンゲージメント率 (%)", dtick=1 if y_max <= 10 else 2
+        ),
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)
