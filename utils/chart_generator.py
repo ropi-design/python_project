@@ -16,7 +16,7 @@ def create_hourly_chart(df):
     hourly_data["時間"] = hourly_data["hour"].astype(str) + "時"
     hourly_data["text_label"] = hourly_data["er_percentage"].apply(lambda x: f"{x:.1f}%")
 
-    # シンプルなPlotly Expressで作成
+    # Plotly Expressを使用してシンプルに作成
     import plotly.express as px
 
     fig = px.bar(
@@ -24,7 +24,6 @@ def create_hourly_chart(df):
         x="時間",
         y="er_percentage",
         title="時間帯別平均エンゲージメント率",
-        labels={"時間": "時間帯", "er_percentage": "エンゲージメント率 (%)"},
         text="text_label",
         color="er_percentage",
         color_continuous_scale="Viridis",
@@ -36,7 +35,7 @@ def create_hourly_chart(df):
         textfont=dict(size=12, color="black"),
         marker=dict(
             line=dict(width=1, color="white"),
-            showscale=False,  # カラーバーを非表示
+            showscale=False,
         ),
     )
 
@@ -57,7 +56,6 @@ def create_hourly_chart(df):
             showgrid=True,
             gridcolor="lightgray",
             gridwidth=1,
-            dtick=1,
         ),
     )
 
@@ -136,7 +134,8 @@ def create_hashtag_chart(df, top_n=10):
     all_hashtags = []
     for hashtags in df["hashtags"].dropna():
         if isinstance(hashtags, str) and hashtags.strip():
-            tags = [tag.strip().lower() for tag in hashtags.split(",") if tag.strip()]
+            # カンマで分割し、#記号を除去して小文字に変換
+            tags = [tag.strip().replace("#", "").lower() for tag in hashtags.split(",") if tag.strip()]
             all_hashtags.extend(tags)
 
     if not all_hashtags:
@@ -145,7 +144,10 @@ def create_hashtag_chart(df, top_n=10):
     # ハッシュタグの出現回数をカウント
     hashtag_counts = pd.Series(all_hashtags).value_counts().head(top_n)
 
-    # テキストラベルを作成
+    # データが少ない場合は実際の数だけ表示
+    actual_top_n = len(hashtag_counts)
+
+    # テキストラベルを作成（数値を棒の上に表示）
     text_labels = [f"{val}回" for val in hashtag_counts.values]
 
     fig = go.Figure(
@@ -156,26 +158,40 @@ def create_hashtag_chart(df, top_n=10):
                 orientation="h",
                 marker=dict(
                     color=hashtag_counts.values,
-                    colorscale="Turbo",
+                    colorscale="Viridis",
                     showscale=False,  # カラーバーを非表示
                     line=dict(width=1, color="white"),
                     cmin=hashtag_counts.values.min(),  # 色の最小値
                     cmax=hashtag_counts.values.max(),  # 色の最大値
                 ),
                 text=text_labels,
-                textposition="auto",
+                textposition="inside",  # 棒の内側にテキストを配置
+                textfont=dict(size=12, color="white", family="Arial Black"),  # 白い太字で表示
             )
         ]
     )
 
     fig.update_layout(
-        title=f"ハッシュタグ使用頻度（上位{top_n}位）",
+        title=f"ハッシュタグ使用頻度（上位{actual_top_n}位）",
         xaxis_title="使用回数",
         yaxis_title="ハッシュタグ",
         template="plotly_white",
-        height=400,
+        height=max(400, actual_top_n * 50),  # データ数に応じて高さを調整
         showlegend=False,
-        margin=dict(l=50, r=50, t=50, b=50),
+        margin=dict(l=120, r=80, t=60, b=60),  # 左マージンを拡大してハッシュタグ名を表示
+        xaxis=dict(
+            showgrid=True,
+            gridcolor="lightgray",
+            gridwidth=1,
+            zeroline=True,
+            zerolinecolor="black",
+            zerolinewidth=1,
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor="lightgray",
+            gridwidth=1,
+        ),
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)

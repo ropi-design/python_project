@@ -60,13 +60,9 @@ def load_csv(file_path):
 
         # エンゲージメント率を計算
         if "followers_at_post" in df.columns and "engagement_total" in df.columns:
-            # フォロワー数が0またはNaNの場合は、リーチ数を使用
-            if "reach" in df.columns and not df["reach"].isna().all():
-                df["er_percentage"] = (df["engagement_total"] / df["reach"] * 100).round(2)
-                df.loc[df["reach"] == 0, "er_percentage"] = np.nan
-            else:
-                df["er_percentage"] = (df["engagement_total"] / df["followers_at_post"] * 100).round(2)
-                df.loc[df["followers_at_post"] == 0, "er_percentage"] = np.nan
+            # フォロワー数ベースでエンゲージメント率を計算
+            df["er_percentage"] = (df["engagement_total"] / df["followers_at_post"] * 100).round(2)
+            df.loc[df["followers_at_post"] == 0, "er_percentage"] = np.nan
 
         # ハッシュタグ列の処理
         if "hashtags" in df.columns:
