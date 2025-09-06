@@ -88,37 +88,30 @@ def create_weekly_chart(df):
     weekday_data["曜日"] = weekday_data["weekday"].map(weekday_jp)
     weekday_data["text_label"] = weekday_data["er_percentage"].apply(lambda x: f"{x:.1f}%")
 
+    # デバッグ情報を削除
 
-    # デバッグ情報を出力
-    print(f"DEBUG: create_weekly_chart - weekday_data shape: {weekday_data.shape}")
-    print(f"DEBUG: create_weekly_chart - weekday_data columns: {weekday_data.columns.tolist()}")
-    print(f"DEBUG: create_weekly_chart - weekday_data data:")
-    print(weekday_data)
+    # Plotly Graph Objectsを使用して確実に縦棒グラフを作成
+    import plotly.graph_objects as go
 
-    # Plotly Expressを使用して確実に縦棒グラフを作成
-    import plotly.express as px
-
-    fig = px.bar(
-        weekday_data,
-        x="曜日",
-        y="er_percentage",
-        title="曜日別平均エンゲージメント率",
-        labels={"曜日": "曜日", "er_percentage": "エンゲージメント率 (%)"},
-        text="text_label",
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=weekday_data["曜日"],
+                y=weekday_data["er_percentage"],
+                text=weekday_data["text_label"],
+                textposition="outside",
+                orientation="v",  # 明示的に縦向きを指定
+                marker=dict(
+                    color=weekday_data["er_percentage"],
+                    colorscale="Plasma",
+                    showscale=False,
+                    line=dict(width=1, color="white"),
+                ),
+            )
+        ]
     )
 
-    # テキストフォーマットとカラーマップを設定
-    fig.update_traces(
-        textposition="auto",
-        marker=dict(
-            color=weekday_data["er_percentage"],
-            colorscale="Plasma",
-            showscale=False,  # カラーバーを非表示
-            line=dict(width=1, color="white"),
-            cmin=weekday_data["er_percentage"].min(),  # 色の最小値
-            cmax=weekday_data["er_percentage"].max(),  # 色の最大値
-        ),
-    )
+    # レイアウトを設定
 
     # Y軸の範囲を適切に設定
     y_max = weekday_data["er_percentage"].max()
@@ -129,10 +122,21 @@ def create_weekly_chart(df):
         height=400,
         showlegend=False,
         margin=dict(l=50, r=50, t=50, b=50),
-        xaxis=dict(type="category", categoryorder="array", categoryarray=weekday_data["曜日"].tolist()),
-        yaxis=dict(
-            type="linear", range=y_range, title="エンゲージメント率 (%)", dtick=1 if y_max <= 10 else 2
+        xaxis=dict(
+            type="category",
+            categoryorder="array",
+            categoryarray=weekday_data["曜日"].tolist(),
+            title="曜日",
+            showgrid=True,
         ),
+        yaxis=dict(
+            type="linear",
+            range=y_range,
+            title="エンゲージメント率 (%)",
+            dtick=1 if y_max <= 10 else 2,
+            showgrid=True,
+        ),
+        barmode="group",
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)
@@ -148,8 +152,12 @@ def create_hashtag_chart(df, top_n=10):
     for hashtags in df["hashtags"].dropna():
         if isinstance(hashtags, str) and hashtags.strip():
             # カンマで分割し、#記号を除去して小文字に変換
-            tags = [tag.strip().replace("#", "").lower() for tag in hashtags.split(",") if tag.strip()]
-            all_hashtags.extend(tags)
+            tags = [
+                tag.strip().replace("#", "").lower() for tag in hashtags.split(",") if tag.strip()
+            ]  # 各タグをさらにスペースで分割して個別の単語にする
+            for tag in tags:
+                words = tag.split()
+                all_hashtags.extend(words)
 
     if not all_hashtags:
         return None
@@ -157,11 +165,13 @@ def create_hashtag_chart(df, top_n=10):
     # ハッシュタグの出現回数をカウント
     hashtag_counts = pd.Series(all_hashtags).value_counts().head(top_n)
 
+    # デバッグ情報を削除
+
     # データが少ない場合は実際の数だけ表示
     actual_top_n = len(hashtag_counts)
 
-    # テキストラベルを作成（数値を棒の上に表示）
-    text_labels = [f"{val}回" for val in hashtag_counts.values]
+    # テキストラベルは表示しない
+    text_labels = ["" for val in hashtag_counts.values]
 
     fig = go.Figure(
         data=[
@@ -199,6 +209,7 @@ def create_hashtag_chart(df, top_n=10):
             zeroline=True,
             zerolinecolor="black",
             zerolinewidth=1,
+            range=[0, hashtag_counts.values.max() * 1.1],  # X軸の範囲を調整
         ),
         yaxis=dict(
             showgrid=True,
