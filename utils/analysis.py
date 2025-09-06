@@ -49,25 +49,30 @@ def calculate_engagement_metrics(df):
 
     # インプレッション数ベースのエンゲージメント率（インプレッション列が存在する場合）
     if "impressions" in df.columns:
-        df["er_by_impressions"] = (df["engagement_total"] / df["impressions"] * 100).round(2)
-        metrics["インプレッション数ベース"] = {
-            "平均ER": f"{df['er_by_impressions'].mean():.2f}%",
-            "最高ER": f"{df['er_by_impressions'].max():.2f}%",
-            "最低ER": f"{df['er_by_impressions'].min():.2f}%",
-            "中央値ER": f"{df['er_by_impressions'].median():.2f}%",
-            "計算式": "（いいね＋コメント＋保存）÷ インプレッション数 × 100",
-        }
+        # インプレッション数が0でない行のみを対象
+        valid_impressions = df["impressions"] > 0
+        if valid_impressions.any():
+            df.loc[valid_impressions, "er_by_impressions"] = (
+                df.loc[valid_impressions, "engagement_total"] / df.loc[valid_impressions, "impressions"] * 100
+            ).round(2)
 
-    # リーチ数ベースのエンゲージメント率（リーチ列が存在する場合）
-    if "reach" in df.columns:
-        df["er_by_reach"] = (df["engagement_total"] / df["reach"] * 100).round(2)
-        metrics["リーチ数ベース"] = {
-            "平均ER": f"{df['er_by_reach'].mean():.2f}%",
-            "最高ER": f"{df['er_by_reach'].max():.2f}%",
-            "最低ER": f"{df['er_by_reach'].min():.2f}%",
-            "中央値ER": f"{df['er_by_reach'].median():.2f}%",
-            "計算式": "エンゲージメント数 ÷ リーチ数 × 100",
-        }
+            # 有効なデータのみで統計を計算
+            valid_data = df[valid_impressions]["er_by_impressions"]
+            metrics["インプレッション数ベース"] = {
+                "平均ER": f"{valid_data.mean():.2f}%",
+                "最高ER": f"{valid_data.max():.2f}%",
+                "最低ER": f"{valid_data.min():.2f}%",
+                "中央値ER": f"{valid_data.median():.2f}%",
+                "計算式": "（いいね＋コメント＋保存）÷ インプレッション数 × 100",
+            }
+        else:
+            metrics["インプレッション数ベース"] = {
+                "平均ER": "データなし",
+                "最高ER": "データなし",
+                "最低ER": "データなし",
+                "中央値ER": "データなし",
+                "計算式": "（いいね＋コメント＋保存）÷ インプレッション数 × 100",
+            }
 
     return metrics
 

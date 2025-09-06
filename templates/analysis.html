@@ -300,41 +300,50 @@
                                             </h5>
                                         </div>
                                         <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-8">
-                                                    <div class="row">
-                                                        <div class="col-md-3 mb-3">
-                                                            <div class="text-center">
-                                                                <h4 class="text-primary">{{ metrics.平均ER }}</h4>
-                                                                <p class="mb-0 text-muted">平均ER</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-3 mb-3">
-                                                            <div class="text-center">
-                                                                <h4 class="text-success">{{ metrics.最高ER }}</h4>
-                                                                <p class="mb-0 text-muted">最高ER</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-3 mb-3">
-                                                            <div class="text-center">
-                                                                <h4 class="text-warning">{{ metrics.最低ER }}</h4>
-                                                                <p class="mb-0 text-muted">最低ER</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-3 mb-3">
-                                                            <div class="text-center">
-                                                                <h4 class="text-info">{{ metrics.中央値ER }}</h4>
-                                                                <p class="mb-0 text-muted">中央値ER</p>
-                                                            </div>
-                                                        </div>
+                                            <!-- 計算式を上部に大きく表示 -->
+                                            <div class="row mb-4">
+                                                <div class="col-12">
+                                                    <div class="alert alert-info border-0 shadow-sm" style="position: relative; z-index: 10; background-color: #d1ecf1 !important; border-left: 4px solid #17a2b8 !important;">
+                                                        <h5 class="text-primary mb-2" style="font-size: 1.1rem;">
+                                                            <i class="fas fa-calculator me-2"></i>計算式
+                                                        </h5>
+                                                        <p class="mb-0 h6" style="font-weight: bold; color: #0c5460; font-size: 1.1rem; line-height: 1.4;">
+                                                            {% if metric_type == "フォロワー数ベース" %}
+                                                                （いいね＋コメント＋保存）÷ フォロワー数 × 100
+                                                            {% elif metric_type == "インプレッション数ベース" %}
+                                                                （いいね＋コメント＋保存）÷ インプレッション数 × 100
+                                                            {% else %}
+                                                                {{ metrics.計算式 }}
+                                                            {% endif %}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="alert alert-light">
-                                                        <h6 class="text-primary mb-2">
-                                                            <i class="fas fa-calculator me-2"></i>計算式
-                                                        </h6>
-                                                        <p class="mb-0 small">{{ metrics.計算式 }}</p>
+                                            </div>
+                                            
+                                            <!-- 統計値の表示 -->
+                                            <div class="row">
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-primary">{{ metrics.平均ER }}</h4>
+                                                        <p class="mb-0 text-muted">平均ER</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-success">{{ metrics.最高ER }}</h4>
+                                                        <p class="mb-0 text-muted">最高ER</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-warning">{{ metrics.最低ER }}</h4>
+                                                        <p class="mb-0 text-muted">最低ER</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="text-center">
+                                                        <h4 class="text-info">{{ metrics.中央値ER }}</h4>
+                                                        <p class="mb-0 text-muted">中央値ER</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -628,6 +637,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing charts...');
         
+        // 計算式は完全に静的に表示されるため、JavaScript保護は不要
+        
+        // 計算式は完全に静的に表示されるため、DOM監視は不要
+        
         // 時間帯別チャート
         {% if hourly_chart %}
         try {
@@ -728,5 +741,10 @@
         }
     });
     {% endif %}
+    
+    // エンゲージメント指標タブのイベントハンドラー（計算式は静的に表示されるため保護不要）
+    document.getElementById('metrics-tab').addEventListener('shown.bs.tab', function () {
+        console.log('Metrics tab shown');
+    });
 </script>
 {% endblock %}

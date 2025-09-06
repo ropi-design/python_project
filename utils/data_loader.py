@@ -24,6 +24,7 @@ def load_csv(file_path):
             "posted_at",
             "followers_at_post",
             "reach",
+            "impressions",
             "likes",
             "comments",
             "saves",
@@ -48,7 +49,7 @@ def load_csv(file_path):
             df["weekday"] = df["posted_at"].dt.day_name()
 
         # 数値列の処理
-        numeric_columns = ["followers_at_post", "reach", "likes", "comments", "saves"]
+        numeric_columns = ["followers_at_post", "reach", "impressions", "likes", "comments", "saves"]
         for col in numeric_columns:
             if col in df.columns:
                 df[col] = df[col].replace(["", "nan", "NaN", "null", "NULL"], np.nan)
@@ -76,5 +77,5 @@ def load_csv(file_path):
 
 def get_sample_data():
     """サンプルデータを取得"""
-    sample_path = os.path.join(os.path.dirname(__file__), "..", "data", "instagram_engagement_data.csv")
+    sample_path = os.path.join(os.path.dirname(__file__), "..", "data", "insta_insight_sample_data.csv")
     return load_csv(sample_path)
