@@ -312,6 +312,8 @@
                                                                 （いいね＋コメント＋保存）÷ フォロワー数 × 100
                                                             {% elif metric_type == "インプレッション数ベース" %}
                                                                 （いいね＋コメント＋保存）÷ インプレッション数 × 100
+                                                            {% elif metric_type == "リーチ数ベース" %}
+                                                                エンゲージメント数 ÷ リーチ数 × 100
                                                             {% else %}
                                                                 {{ metrics.計算式 }}
                                                             {% endif %}
@@ -606,7 +608,7 @@
                                                             {% elif category == "night" %}夜間（0-5時）
                                                             {% endif %}:
                                                         </strong>
-                                                        平均ER {{ data.avg_er }}% (投稿数: {{ data.post_count }})
+                                                        平均ER {{ "%.1f"|format(data.avg_er) }}% (投稿数: {{ data.post_count }})
                                                     </p>
                                                     {% endfor %}
                                                 </div>
@@ -637,18 +639,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing charts...');
         
-        // 計算式は完全に静的に表示されるため、JavaScript保護は不要
-        
-        // 計算式は完全に静的に表示されるため、DOM監視は不要
-        
         // 時間帯別チャート
         {% if hourly_chart %}
         try {
             const hourlyData = {{ hourly_chart|safe }};
             console.log('Hourly chart data:', hourlyData);
             if (hourlyData && hourlyData.data && hourlyData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('hourly-chart').innerHTML = '';
                 Plotly.newPlot('hourly-chart', hourlyData.data, hourlyData.layout);
                 console.log('Hourly chart rendered successfully');
             } else {
@@ -665,8 +661,6 @@
             const weeklyData = {{ weekly_chart|safe }};
             console.log('Weekly chart data:', weeklyData);
             if (weeklyData && weeklyData.data && weeklyData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('weekly-chart').innerHTML = '';
                 Plotly.newPlot('weekly-chart', weeklyData.data, weeklyData.layout);
                 console.log('Weekly chart rendered successfully');
             } else {
@@ -683,8 +677,6 @@
             const hashtagData = {{ hashtag_chart|safe }};
             console.log('Hashtag chart data:', hashtagData);
             if (hashtagData && hashtagData.data && hashtagData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('hashtag-chart').innerHTML = '';
                 Plotly.newPlot('hashtag-chart', hashtagData.data, hashtagData.layout);
                 console.log('Hashtag chart rendered successfully');
             } else {
@@ -696,14 +688,12 @@
         {% endif %}
     });
     
-    // タブ切り替え時のチャート再描画
+    // タブ切り替え時のチャート再描画（計算式は静的なので影響なし）
     {% if hourly_chart %}
     document.getElementById('hourly-tab').addEventListener('shown.bs.tab', function () {
         try {
             const chartData = {{ hourly_chart|safe }};
             if (chartData && chartData.data && chartData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('hourly-chart').innerHTML = '';
                 Plotly.newPlot('hourly-chart', chartData.data, chartData.layout);
             }
         } catch (error) {
@@ -717,8 +707,6 @@
         try {
             const chartData = {{ weekly_chart|safe }};
             if (chartData && chartData.data && chartData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('weekly-chart').innerHTML = '';
                 Plotly.newPlot('weekly-chart', chartData.data, chartData.layout);
             }
         } catch (error) {
@@ -732,8 +720,6 @@
         try {
             const chartData = {{ hashtag_chart|safe }};
             if (chartData && chartData.data && chartData.layout) {
-                // 読み込み中表示を削除
-                document.getElementById('hashtag-chart').innerHTML = '';
                 Plotly.newPlot('hashtag-chart', chartData.data, chartData.layout);
             }
         } catch (error) {
@@ -741,10 +727,5 @@
         }
     });
     {% endif %}
-    
-    // エンゲージメント指標タブのイベントハンドラー（計算式は静的に表示されるため保護不要）
-    document.getElementById('metrics-tab').addEventListener('shown.bs.tab', function () {
-        console.log('Metrics tab shown');
-    });
 </script>
 {% endblock %}
