@@ -95,18 +95,15 @@ def analysis(filename):
 
         # 時間帯別分析
         hourly_data = avg_by_hour(df)
-        hourly_chart_json = create_hourly_chart(df) if not hourly_data.empty else None
-        hourly_chart = json.loads(hourly_chart_json) if hourly_chart_json else None
+        hourly_chart = create_hourly_chart(df) if not hourly_data.empty else None
 
         # 曜日別分析
         weekly_data = avg_by_weekday(df)
-        weekly_chart_json = create_weekly_chart(df) if not weekly_data.empty else None
-        weekly_chart = json.loads(weekly_chart_json) if weekly_chart_json else None
+        weekly_chart = create_weekly_chart(df) if not weekly_data.empty else None
 
         # ハッシュタグ分析
         hashtag_data = simple_hashtag_summary(df, top_n=10)
-        hashtag_chart_json = create_hashtag_chart(df, top_n=10) if not hashtag_data.empty else None
-        hashtag_chart = json.loads(hashtag_chart_json) if hashtag_chart_json else None
+        hashtag_chart = create_hashtag_chart(df, top_n=10) if not hashtag_data.empty else None
 
         return render_template(
             "analysis.html",

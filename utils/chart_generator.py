@@ -12,26 +12,53 @@ def create_hourly_chart(df):
 
     # 時間帯別の平均ERを計算
     hourly_data = df.groupby("hour")["er_percentage"].mean().round(2).reset_index()
+    hourly_data = hourly_data.sort_values("hour")
     hourly_data["時間"] = hourly_data["hour"].astype(str) + "時"
+    hourly_data["text_label"] = hourly_data["er_percentage"].apply(lambda x: f"{x:.1f}%")
 
-    fig = go.Figure(
-        data=[
-            go.Bar(
-                x=hourly_data["時間"],
-                y=hourly_data["er_percentage"],
-                marker_color="rgba(58, 71, 80, 0.6)",
-                text=hourly_data["er_percentage"],
-                textposition="auto",
-            )
-        ]
+    # シンプルなPlotly Expressで作成
+    import plotly.express as px
+
+    fig = px.bar(
+        hourly_data,
+        x="時間",
+        y="er_percentage",
+        title="時間帯別平均エンゲージメント率",
+        labels={"時間": "時間帯", "er_percentage": "エンゲージメント率 (%)"},
+        text="text_label",
+        color="er_percentage",
+        color_continuous_scale="Viridis",
     )
 
+    # テキストとカラーマップの設定
+    fig.update_traces(
+        textposition="outside",
+        textfont=dict(size=12, color="black"),
+        marker=dict(
+            line=dict(width=1, color="white"),
+            showscale=False,  # カラーバーを非表示
+        ),
+    )
+
+    # レイアウトの設定
     fig.update_layout(
-        title="時間帯別平均エンゲージメント率",
-        xaxis_title="時間",
-        yaxis_title="エンゲージメント率 (%)",
         template="plotly_white",
-        height=400,
+        height=500,
+        showlegend=False,
+        margin=dict(l=60, r=60, t=60, b=60),
+        xaxis=dict(
+            title="時間帯",
+            showgrid=True,
+            gridcolor="lightgray",
+            gridwidth=1,
+        ),
+        yaxis=dict(
+            title="エンゲージメント率 (%)",
+            showgrid=True,
+            gridcolor="lightgray",
+            gridwidth=1,
+            dtick=1,
+        ),
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)
@@ -61,25 +88,40 @@ def create_weekly_chart(df):
         "Sunday": "日曜日",
     }
     weekday_data["曜日"] = weekday_data["weekday"].map(weekday_jp)
+    weekday_data["text_label"] = weekday_data["er_percentage"].apply(lambda x: f"{x:.1f}%")
 
-    fig = go.Figure(
-        data=[
-            go.Bar(
-                x=weekday_data["曜日"],
-                y=weekday_data["er_percentage"],
-                marker_color="rgba(58, 71, 80, 0.6)",
-                text=weekday_data["er_percentage"],
-                textposition="auto",
-            )
-        ]
+    # Plotly Expressを使用して確実に縦棒グラフを作成
+    import plotly.express as px
+
+    fig = px.bar(
+        weekday_data,
+        x="曜日",
+        y="er_percentage",
+        title="曜日別平均エンゲージメント率",
+        labels={"曜日": "曜日", "er_percentage": "エンゲージメント率 (%)"},
+        text="text_label",
+    )
+
+    # テキストフォーマットとカラーマップを設定
+    fig.update_traces(
+        textposition="auto",
+        marker=dict(
+            color=weekday_data["er_percentage"],
+            colorscale="Plasma",
+            showscale=False,  # カラーバーを非表示
+            line=dict(width=1, color="white"),
+            cmin=weekday_data["er_percentage"].min(),  # 色の最小値
+            cmax=weekday_data["er_percentage"].max(),  # 色の最大値
+        ),
     )
 
     fig.update_layout(
-        title="曜日別平均エンゲージメント率",
-        xaxis_title="曜日",
-        yaxis_title="エンゲージメント率 (%)",
         template="plotly_white",
         height=400,
+        showlegend=False,
+        margin=dict(l=50, r=50, t=50, b=50),
+        xaxis=dict(type="category", categoryorder="array", categoryarray=weekday_data["曜日"].tolist()),
+        yaxis=dict(type="linear", range=[0, max(weekday_data["er_percentage"]) * 1.1]),
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)
@@ -103,21 +145,25 @@ def create_hashtag_chart(df, top_n=10):
     # ハッシュタグの出現回数をカウント
     hashtag_counts = pd.Series(all_hashtags).value_counts().head(top_n)
 
+    # テキストラベルを作成
+    text_labels = [f"{val}回" for val in hashtag_counts.values]
+
     fig = go.Figure(
         data=[
-            go.Scatter(
+            go.Bar(
                 x=hashtag_counts.values,
                 y=hashtag_counts.index,
-                mode="markers",
+                orientation="h",
                 marker=dict(
-                    size=hashtag_counts.values * 2,
                     color=hashtag_counts.values,
-                    colorscale="Viridis",
-                    showscale=True,
-                    colorbar=dict(title="使用回数"),
+                    colorscale="Turbo",
+                    showscale=False,  # カラーバーを非表示
+                    line=dict(width=1, color="white"),
+                    cmin=hashtag_counts.values.min(),  # 色の最小値
+                    cmax=hashtag_counts.values.max(),  # 色の最大値
                 ),
-                text=hashtag_counts.values,
-                textposition="middle right",
+                text=text_labels,
+                textposition="auto",
             )
         ]
     )
@@ -128,6 +174,8 @@ def create_hashtag_chart(df, top_n=10):
         yaxis_title="ハッシュタグ",
         template="plotly_white",
         height=400,
+        showlegend=False,
+        margin=dict(l=50, r=50, t=50, b=50),
     )
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)

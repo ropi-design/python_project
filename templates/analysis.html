@@ -192,7 +192,14 @@
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <div id="hourly-chart"></div>
+                                    <div id="hourly-chart" style="min-height: 400px;">
+                                        <div class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">読み込み中...</span>
+                                            </div>
+                                            <p class="mt-2 text-muted">チャートを読み込み中...</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% else %}
@@ -215,7 +222,14 @@
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <div id="weekly-chart"></div>
+                                    <div id="weekly-chart" style="min-height: 400px;">
+                                        <div class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">読み込み中...</span>
+                                            </div>
+                                            <p class="mt-2 text-muted">チャートを読み込み中...</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% else %}
@@ -238,7 +252,14 @@
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <div id="hashtag-chart"></div>
+                                    <div id="hashtag-chart" style="min-height: 400px;">
+                                        <div class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">読み込み中...</span>
+                                            </div>
+                                            <p class="mt-2 text-muted">チャートを読み込み中...</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% else %}
@@ -259,27 +280,59 @@
 <script>
     // ページ読み込み完了後にチャートを描画
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing charts...');
+        
         // 時間帯別チャート
         {% if hourly_chart %}
-        const hourlyData = {{ hourly_chart|safe }};
-        if (hourlyData && hourlyData.data && hourlyData.layout) {
-            Plotly.newPlot('hourly-chart', hourlyData.data, hourlyData.layout);
+        try {
+            const hourlyData = {{ hourly_chart|safe }};
+            console.log('Hourly chart data:', hourlyData);
+            if (hourlyData && hourlyData.data && hourlyData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('hourly-chart').innerHTML = '';
+                Plotly.newPlot('hourly-chart', hourlyData.data, hourlyData.layout);
+                console.log('Hourly chart rendered successfully');
+            } else {
+                console.error('Invalid hourly chart data structure');
+            }
+        } catch (error) {
+            console.error('Error rendering hourly chart:', error);
         }
         {% endif %}
         
         // 曜日別チャート
         {% if weekly_chart %}
-        const weeklyData = {{ weekly_chart|safe }};
-        if (weeklyData && weeklyData.data && weeklyData.layout) {
-            Plotly.newPlot('weekly-chart', weeklyData.data, weeklyData.layout);
+        try {
+            const weeklyData = {{ weekly_chart|safe }};
+            console.log('Weekly chart data:', weeklyData);
+            if (weeklyData && weeklyData.data && weeklyData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('weekly-chart').innerHTML = '';
+                Plotly.newPlot('weekly-chart', weeklyData.data, weeklyData.layout);
+                console.log('Weekly chart rendered successfully');
+            } else {
+                console.error('Invalid weekly chart data structure');
+            }
+        } catch (error) {
+            console.error('Error rendering weekly chart:', error);
         }
         {% endif %}
         
         // ハッシュタグチャート
         {% if hashtag_chart %}
-        const hashtagData = {{ hashtag_chart|safe }};
-        if (hashtagData && hashtagData.data && hashtagData.layout) {
-            Plotly.newPlot('hashtag-chart', hashtagData.data, hashtagData.layout);
+        try {
+            const hashtagData = {{ hashtag_chart|safe }};
+            console.log('Hashtag chart data:', hashtagData);
+            if (hashtagData && hashtagData.data && hashtagData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('hashtag-chart').innerHTML = '';
+                Plotly.newPlot('hashtag-chart', hashtagData.data, hashtagData.layout);
+                console.log('Hashtag chart rendered successfully');
+            } else {
+                console.error('Invalid hashtag chart data structure');
+            }
+        } catch (error) {
+            console.error('Error rendering hashtag chart:', error);
         }
         {% endif %}
     });
@@ -287,27 +340,45 @@
     // タブ切り替え時のチャート再描画
     {% if hourly_chart %}
     document.getElementById('hourly-tab').addEventListener('shown.bs.tab', function () {
-        const chartData = {{ hourly_chart|safe }};
-        if (chartData && chartData.data && chartData.layout) {
-            Plotly.newPlot('hourly-chart', chartData.data, chartData.layout);
+        try {
+            const chartData = {{ hourly_chart|safe }};
+            if (chartData && chartData.data && chartData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('hourly-chart').innerHTML = '';
+                Plotly.newPlot('hourly-chart', chartData.data, chartData.layout);
+            }
+        } catch (error) {
+            console.error('Error re-rendering hourly chart:', error);
         }
     });
     {% endif %}
     
     {% if weekly_chart %}
     document.getElementById('weekly-tab').addEventListener('shown.bs.tab', function () {
-        const chartData = {{ weekly_chart|safe }};
-        if (chartData && chartData.data && chartData.layout) {
-            Plotly.newPlot('weekly-chart', chartData.data, chartData.layout);
+        try {
+            const chartData = {{ weekly_chart|safe }};
+            if (chartData && chartData.data && chartData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('weekly-chart').innerHTML = '';
+                Plotly.newPlot('weekly-chart', chartData.data, chartData.layout);
+            }
+        } catch (error) {
+            console.error('Error re-rendering weekly chart:', error);
         }
     });
     {% endif %}
     
     {% if hashtag_chart %}
     document.getElementById('hashtag-tab').addEventListener('shown.bs.tab', function () {
-        const chartData = {{ hashtag_chart|safe }};
-        if (chartData && chartData.data && chartData.layout) {
-            Plotly.newPlot('hashtag-chart', chartData.data, chartData.layout);
+        try {
+            const chartData = {{ hashtag_chart|safe }};
+            if (chartData && chartData.data && chartData.layout) {
+                // 読み込み中表示を削除
+                document.getElementById('hashtag-chart').innerHTML = '';
+                Plotly.newPlot('hashtag-chart', chartData.data, chartData.layout);
+            }
+        } catch (error) {
+            console.error('Error re-rendering hashtag chart:', error);
         }
     });
     {% endif %}
