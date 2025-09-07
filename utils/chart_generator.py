@@ -39,6 +39,12 @@ def create_hourly_chart(df):
         ),
     )
 
+    # Y軸の範囲をデータに合わせて設定（0から開始）
+    y_max = hourly_data["er_percentage"].max()
+    y_min = hourly_data["er_percentage"].min()
+    # データの変動を正しく表示するため、Y軸の範囲を調整
+    y_range = [0, y_max * 1.1]
+
     # レイアウトの設定
     fig.update_layout(
         template="plotly_white",
@@ -56,6 +62,10 @@ def create_hourly_chart(df):
             showgrid=True,
             gridcolor="lightgray",
             gridwidth=1,
+            range=y_range,
+            dtick=1.0,
+            fixedrange=False,
+            autorange=False,
         ),
     )
 
@@ -113,9 +123,11 @@ def create_weekly_chart(df):
 
     # レイアウトを設定
 
-    # Y軸の範囲を適切に設定
+    # Y軸の範囲をデータに合わせて設定（0から開始）
     y_max = weekday_data["er_percentage"].max()
-    y_range = [0, y_max * 1.2] if y_max > 0 else [0, 1]
+    y_min = weekday_data["er_percentage"].min()
+    # データの変動を正しく表示するため、Y軸の範囲を調整
+    y_range = [0, y_max * 1.1]
 
     fig.update_layout(
         template="plotly_white",
@@ -133,8 +145,10 @@ def create_weekly_chart(df):
             type="linear",
             range=y_range,
             title="エンゲージメント率 (%)",
-            dtick=1 if y_max <= 10 else 2,
+            dtick=0.5,
             showgrid=True,
+            fixedrange=False,
+            autorange=False,
         ),
         barmode="group",
     )

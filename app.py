@@ -69,7 +69,7 @@ def load_sample():
     """サンプルデータを読み込み"""
     try:
         df = get_sample_data()
-        return redirect(url_for("analysis", filename="sample_data.csv"))
+        return redirect(url_for("analysis", filename="insta_insight_sample_data_100posts.csv"))
     except Exception as e:
         flash(f"サンプルデータの読み込みエラー: {str(e)}")
         return redirect(url_for("index"))
@@ -79,7 +79,7 @@ def load_sample():
 def analysis(filename):
     """分析ページ"""
     try:
-        if filename == "sample_data.csv":
+        if filename == "insta_insight_sample_data_100posts.csv":
             df = get_sample_data()
         else:
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
@@ -142,10 +142,10 @@ def analysis(filename):
 @app.route("/api/chart/<chart_type>")
 def get_chart(chart_type):
     """チャートデータをAPIで取得"""
-    filename = request.args.get("filename", "sample_data.csv")
+    filename = request.args.get("filename", "insta_insight_sample_data_100posts.csv")
 
     try:
-        if filename == "sample_data.csv":
+        if filename == "insta_insight_sample_data_100posts.csv":
             df = get_sample_data()
         else:
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)

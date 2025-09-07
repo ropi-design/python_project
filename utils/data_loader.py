@@ -77,5 +77,7 @@ def load_csv(file_path):
 
 def get_sample_data():
     """サンプルデータを取得"""
-    sample_path = os.path.join(os.path.dirname(__file__), "..", "data", "insta_insight_sample_data.csv")
+    sample_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "insta_insight_sample_data_100posts.csv"
+    )
     return load_csv(sample_path)
