@@ -619,6 +619,7 @@
 {% block extra_scripts %}
 <script>
     // ページ読み込み完了後にチャートを描画
+    // チャートの初期化
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing charts...');
         
@@ -687,7 +688,7 @@
         {% endif %}
     });
     
-    // タブ切り替え時のチャート再描画（計算式は静的なので影響なし）
+    // タブ切り替え時のチャート再描画
     {% if hourly_chart %}
     document.getElementById('hourly-tab').addEventListener('shown.bs.tab', function () {
         try {
